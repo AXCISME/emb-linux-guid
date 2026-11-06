@@ -246,6 +246,16 @@ bind(fd, (struct sockaddr *)&addr,
 
 ---
 
+## 附：本节视频索引
+
+| 视频 | 时长 | 关键内容 | 起始时间 |
+|---|---|---|---|
+| UNIX域套接字理论 | 3:00 | AF_UNIX；文件路径寻址；与 AF_INET 对比 | 0:00 |
+| UNIX域流式套接字实现 | 16:00 | sockaddr_un；bind/listen/accept；unlink 残留文件 | 3:00 |
+| UNI域数据报套接字实现 | 11:00 | SOCK_DGRAM；客户端也要 bind；sendto/recvfrom | 19:00 |
+
+> 起始时间指该视频在所在小节播放列表中的位置；单视频小节从 0:00 开始。截图文件名中的秒数即该视频内容时间。
+
 ## 七、小结与自测
 
 **一句话总结**：UNIX 域套接字把“地址”从 `IP:Port` 换成“文件路径”，用 `AF_UNIX` + `sockaddr_un`，调用顺序与 TCP/UDP 基本一致；它不出主机、性能高、权限细，是本地服务间通信的首选。

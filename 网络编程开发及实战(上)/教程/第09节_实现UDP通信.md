@@ -250,6 +250,16 @@ UDP 不保证送达，也不保证顺序。实际项目中通常要自己在应�
 
 ---
 
+## 附：本节视频索引
+
+| 视频 | 时长 | 关键内容 | 起始时间 |
+|---|---|---|---|
+| 函数接口扩展与UDP通信实现流程 | 8:00 | send/recv 与 read/write；flags（MSG_PEEK/MSG_OOB）；sendto/recvfrom；UDP 流程 | 0:00 |
+| UDP服务器代码 | 19:00 | SOCK_DGRAM；bind；recvfrom 拿对端地址；sendto 回包 | 8:00 |
+| UDP客户端代码 | 7:00 | 客户端 sendto/recvfrom；不必 bind；数据报边界 | 27:00 |
+
+> 起始时间指该视频在所在小节播放列表中的位置；单视频小节从 0:00 开始。截图文件名中的秒数即该视频内容时间。
+
 ## 七、小结与自测
 
 **一句话总结**：UDP 把“连接”去掉，服务器 `socket→bind→recvfrom/sendto`，客户端 `socket→sendto/recvfrom`；一次发送对应一次接收，简单、快，但可靠性要自己兜底。

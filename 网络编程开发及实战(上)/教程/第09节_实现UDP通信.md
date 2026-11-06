@@ -33,6 +33,10 @@ TCP 是“先建立连接，再像文件一样读写”；UDP 是“每个数据
 
 ## 二、核心函数：sendto / recvfrom
 
+![图 1　从 write/read 到 send/recv：前三个参数一致，flags 通常为 0](../screenshots/第09节_实现UDP通信/v01/f0060.jpg)
+
+在讲 `sendto/recvfrom` 之前，先看一对更容易理解的函数：`send/recv`——它们的前三个参数与 `write/read` 完全一致，只是多了一个 `flags`（通常填 0）。`sendto/recvfrom` 则是在此基础上增加了“地址”参数。
+
 ```c
 ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
                const struct sockaddr *dest_addr, socklen_t addrlen);
@@ -70,6 +74,8 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 ---
 
 ## 三、UDP 服务器代码
+
+![图 2　UDP 服务器代码：socket 使用 SOCK_DGRAM，bind 后直接 recvfrom/sendto](../screenshots/第09节_实现UDP通信/v02/f0300.jpg)
 
 ```c
 // udp_server.c

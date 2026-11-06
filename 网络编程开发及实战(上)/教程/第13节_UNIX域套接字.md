@@ -71,6 +71,8 @@ bind(fd, (struct sockaddr *)&addr, sizeof(addr));
 
 ## 三、流式 UNIX 域套接字
 
+![图 1　UNIX 域流式套接字：用法与 TCP 基本一致，区别在协议与地址](../screenshots/第13节_UNIX域套接字/v01/f0090.jpg)
+
 流式（`SOCK_STREAM`）的调用顺序与 TCP 几乎一样，只是地址结构不同：
 
 **服务器**
@@ -97,6 +99,8 @@ unlink("/tmp/my.sock");                 // 退出时删除
 ```
 
 **客户端**
+
+![图 2　UNIX 域流式服务器代码：socket(AF_UNIX, SOCK_STREAM)、填写 sockaddr_un、bind/listen/accept](../screenshots/第13节_UNIX域套接字/v02/f0300.jpg)
 
 ```c
 int fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -186,6 +190,47 @@ chmod 600 /tmp/my.sock     # 只有属主可读写
 | `connect: Connection refused` | 文件存在但没有进程监听 | 重启服务器 |
 | 数据报收不到回包 | 客户端没 bind 路径 | 客户端也 bind |
 | 路径太长 | 超过 108 字节 | 换短路径或用抽象命名空间 |
+
+### 5.4 socketpair：一对“无名”的双向连接
+
+有时父子进程/两个线程只需要一条现成的双向通道，不需要路径，也不想走文件系统。用 `socketpair` 一次创建**两个已连接**的套接字：
+
+```c
+int sv[2];
+socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
+// sv[0] 和 sv[1] 互为对端：写 sv[0]，从 sv[1] 读；反之亦然
+
+if (fork() == 0) {          // 子进程
+    close(sv[0]);
+    write(sv[1], "hello", 5);
+    _exit(0);
+}
+close(sv[1]);               // 父进程
+char buf[16];
+read(sv[0], buf, sizeof(buf));
+```
+
+特点：
+
+- 无需 `bind/listen/accept/connect`，创建即连接；
+- 没有文件系统节点，不会残留 `.sock` 文件；
+- 常用于 `fork` 前后的父子进程通信、线程间传递 fd（配合 `SCM_RIGHTS`）。
+
+### 5.5 抽象命名空间（Linux 特有）
+
+把 `sun_path[0]` 设为 `'\0'`，后面的字节作为名字：
+
+```c
+struct sockaddr_un addr;
+memset(&addr, 0, sizeof(addr));
+addr.sun_family = AF_UNIX;
+addr.sun_path[0] = '\0';
+strcpy(addr.sun_path + 1, "my_abstract_socket");
+bind(fd, (struct sockaddr *)&addr,
+     offsetof(struct sockaddr_un, sun_path) + 1 + strlen("my_abstract_socket"));
+```
+
+优点：不产生文件、进程退出自动释放、名字不会与文件路径冲突；缺点：**Linux 特有**，不可移植，且不能用文件权限控制访问。
 
 ---
 

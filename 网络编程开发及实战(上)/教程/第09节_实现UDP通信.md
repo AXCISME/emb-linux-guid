@@ -71,6 +71,33 @@ ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
 
 > **注意**：`recvfrom` 的 `addrlen` 是**指针**，和 `accept` 一样；`sendto` 的 `addrlen` 是**值**，和 `bind` 一样。这两个别记反。
 
+### 2.3 send/recv 与 flags：和 read/write 的关系
+
+`send/recv` 的前三个参数与 `write/read` 完全一致，只多一个 `flags`：
+
+```c
+ssize_t send(int sockfd, const void *buf, size_t len, int flags);
+ssize_t recv(int sockfd, void *buf, size_t len, int flags);
+```
+
+- `flags = 0` 时，`send` 等价于 `write`，`recv` 等价于 `read`；
+- 常用 flags：
+  - `MSG_PEEK`：**窥视**数据——数据被复制到缓冲区，但**不从接收队列删除**，下次读还能读到同一批数据（甚至可能读到“旧数据 + 新到达的数据”）；
+  - `MSG_OOB`：处理**带外数据**（TCP 的紧急数据），UDP 一般不用；
+  - `MSG_DONTWAIT`：非阻塞本次调用（不改变 socket 的阻塞属性）。
+
+> **补充：MSG_PEEK 的典型用途**
+> 先“看一眼”包头判断消息类型，再决定读多少、怎么解析；或者实现“多消费者窥视同一队列”的逻辑。它不常用，但面试会问“peek 和 read 的区别”。
+
+UDP 通信的完整流程因此非常短：
+
+```
+服务器：socket(AF_INET, SOCK_DGRAM) → bind → recvfrom / sendto（循环）
+客户端：socket(AF_INET, SOCK_DGRAM) → sendto / recvfrom（不必 bind）
+```
+
+与 TCP 相比，服务器少了 `listen/accept`，客户端少了 `connect`——这正是“无连接”在 API 上的体现。
+
 ---
 
 ## 三、UDP 服务器代码

@@ -75,6 +75,8 @@ while (1) {
 
 ### 2.2 一个可运行的骨架
 
+![图 2　课程中的 fork 版服务器：父进程 close(newfd)，子进程 close(fd) 后处理 newfd](../screenshots/第08节_TCP并发实现/v03/f0090.jpg)
+
 ```c
 static void handle_client(int fd)
 {

@@ -47,6 +47,8 @@ socket() → bind() → listen() → accept()
 
 ## 二、服务器完整代码
 
+![图 3　课程中服务器代码的起手式：socket(AF_INET, SOCK_STREAM, 0)，随后填写 sockaddr_in 的 family/port](../screenshots/第07节_实现TCP通信/v02/f0300.jpg)
+
 ```c
 // tcp_server.c
 #include <stdio.h>
@@ -230,13 +232,34 @@ setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
 
 解决“服务器重启后 bind 失败”。高并发场景还会配合 `SO_REUSEPORT` 做多进程负载均衡。
 
-### 5.3 循环收发与优雅关闭
+### 5.3 参数化：把 IP/端口从命令行传入
+
+课程最后的版本把地址和端口做成了命令行参数，便于换机测试：
+
+```c
+if (argc < 3) {
+    fprintf(stderr, "usage: %s <ip> <port>\n", argv[0]);
+    return -1;
+}
+addr.sin_port = htons(atoi(argv[2]));
+inet_pton(AF_INET, argv[1], &addr.sin_addr);
+```
+
+好处：
+
+- 服务器既可以绑 `0.0.0.0`，也可以绑某块网卡的具体 IP，方便多网卡环境；
+- 客户端可以指向本机、局域网另一台机器或公网服务器，不用改代码重编译；
+- 端口冲突时换个端口即可，便于同时起多个实例。
+
+> **注意**：`atoi` 不检查错误，端口越界（>65535）会被截断；工程中应使用 `strtol` 并检查范围。
+
+### 5.4 循环收发与优雅关闭
 
 - 服务器用 `while (read(...) > 0)` 持续服务；
 - `read` 返回 0 表示对端关闭，应 `close(connfd)` 后继续 `accept` 下一个；
 - 退出前最好 `shutdown(fd, SHUT_WR)` 发送 FIN，再 `close`，避免数据未发完就断开。
 
-### 5.4 粘包与消息边界
+### 5.5 粘包与消息边界
 
 TCP 是**字节流**，没有消息边界：客户端连续 `write` 两次，服务器可能一次 `read` 全收到。解决方式：
 

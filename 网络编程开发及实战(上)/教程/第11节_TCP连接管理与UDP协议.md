@@ -17,6 +17,8 @@
 
 ## 一、三次握手：建立连接
 
+![图 1　TCP 建立连接：三次报文握手（SYN、SYN+ACK、ACK）](../screenshots/第11节_TCP连接管理与UDP协议/v01/f0420.jpg)
+
 ### 1.1 时序
 
 ```
@@ -76,6 +78,8 @@ TIME_WAIT（等 2MSL）→ CLOSED
 3. 服务器发完数据后发 FIN，进入 `LAST_ACK`；
 4. 客户端回 ACK，进入 `TIME_WAIT`，等待 2MSL 后关闭。
 
+![图 2　TCP 释放连接：四报文挥手，主动关闭方进入 TIME_WAIT](../screenshots/第11节_TCP连接管理与UDP协议/v02/f0120.jpg)
+
 ### 2.2 为什么挥手要四次
 
 因为 TCP 是**全双工**的：客户端说“我不发了”，不代表服务器也“不发了”。服务器可能还有数据要发送，所以：
@@ -102,6 +106,8 @@ MSL（Maximum Segment Lifetime）是报文在网络中的最大生存时间，2M
 ## 三、Wireshark 抓包验证
 
 ### 3.1 常用过滤
+
+![图 3　Wireshark 抓包界面：上方是报文列表，中间是逐层解码（Frame → Ethernet → IP → TCP），下方是十六进制](../screenshots/第11节_TCP连接管理与UDP协议/v04/f0600.jpg)
 
 ```
 tcp.port == 8888                 # 按端口过滤

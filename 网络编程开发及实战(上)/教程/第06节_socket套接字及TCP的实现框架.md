@@ -33,6 +33,24 @@
 
 ## 二、地址结构：sockaddr_in
 
+在填地址之前，先把 `socket()` 的三个参数拆开看——它们决定了“用哪个协议族、哪种通信语义”：
+
+| domain（协议族） | 含义 | 配套地址结构 |
+|---|---|---|
+| `AF_INET` | IPv4 | `struct sockaddr_in` |
+| `AF_INET6` | IPv6 | `struct sockaddr_in6` |
+| `AF_UNIX` / `AF_LOCAL` | 本地（UNIX 域） | `struct sockaddr_un` |
+| `AF_PACKET` | 链路层原始套接字 | `struct sockaddr_ll` |
+
+| type（套接字类型） | 语义 | 对应协议 |
+|---|---|---|
+| `SOCK_STREAM` | 有序、可靠、面向连接 | TCP |
+| `SOCK_DGRAM` | 数据报、无连接 | UDP |
+| `SOCK_RAW` | 原始套接字，可自己构造 IP 头 | IP/ICMP 等 |
+
+> **补充：`AF_*` 与 `PF_*`**
+> `AF` = Address Family，`PF` = Protocol Family。历史上二者有区分，现代 Linux 里 `AF_INET == PF_INET`，填哪个都能工作，但约定俗成用 `AF_*`。
+
 要 bind 或 connect，必须告诉内核“哪个 IP、哪个端口”。IPv4 用 `struct sockaddr_in`：
 
 ```c
